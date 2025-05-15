@@ -150,3 +150,161 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cycles de Sommeil</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    input[type="time"] {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1.2em;
+      background-color: #1f1f1f;
+      border: none;
+      color: #e0e0e0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #03DAC6;
+      border: none;
+      border-radius: 5px;
+      margin: 10px;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .results, .countdown {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .progress-bar {
+      height: 20px;
+      width: 100%;
+      background-color: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background-color: #03DAC6;
+      transition: width 0.5s ease-in-out;
+    }
+
+    .futur-btn {
+      background-color: transparent;
+      border: 2px solid #03DAC6;
+      color: #03DAC6;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculateur de Sommeil</h1>
+  <label for="wakeTime">Heure de réveil :</label>
+  <input type="time" id="wakeTime">
+  <button onclick="calculateCycles()">Calculer les cycles</button>
+  <button onclick="sleepNow()">Je vais dormir maintenant</button>
+  <div class="results" id="results"></div>
+  <div class="countdown" id="countdown"></div>
+  <div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+  </div>
+
+  <!-- Bouton vers le mode futuriste -->
+  <button class="futur-btn" onclick="window.location.href='sommeil_futuriste.html'">Mode Futuriste</button>
+
+  <script>
+    function calculateCycles() {
+      const wakeTime = document.getElementById('wakeTime').value;
+      if (!wakeTime) return;
+
+      const [h, m] = wakeTime.split(':');
+      const wakeDate = new Date();
+      wakeDate.setHours(h, m, 0, 0);
+
+      const sleepCycles = 6;
+      const cycleLength = 90 * 60 * 1000;
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = "<h3>Heures pour s'endormir :</h3>";
+
+      let output = "";
+      for (let i = sleepCycles; i >= 1; i--) {
+        const sleepTime = new Date(wakeDate - i * cycleLength);
+        output += `<p>${formatTime(sleepTime)}</p>`;
+      }
+      resultsDiv.innerHTML += output;
+
+      updateCountdown(wakeDate);
+    }
+
+    function sleepNow() {
+      const now = new Date();
+      const sleepCycles = 6;
+      const cycleLength = 90 * 60 * 1000;
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = "<h3>Si tu dors maintenant, réveille-toi à :</h3>";
+
+      let output = "";
+      for (let i = 1; i <= sleepCycles; i++) {
+        const wakeTime = new Date(now.getTime() + i * cycleLength);
+        output += `<p>${formatTime(wakeTime)}</p>`;
+      }
+      resultsDiv.innerHTML += output;
+    }
+
+    function updateCountdown(target) {
+      const countdown = document.getElementById('countdown');
+      function tick() {
+        const now = new Date();
+        const diff = target - now;
+        if (diff <= 0) {
+          countdown.innerHTML = "C'est l'heure de te réveiller !";
+          document.getElementById("progressBar").style.width = "100%";
+          return;
+        }
+        const hrs = Math.floor(diff / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        countdown.innerHTML = `Temps restant avant réveil : ${hrs}h ${mins}m ${secs}s`;
+
+        const totalSleep = 6 * 90 * 60 * 1000;
+        const progress = 100 - ((diff / totalSleep) * 100);
+        document.getElementById("progressBar").style.width = progress + "%";
+
+        requestAnimationFrame(tick);
+      }
+      tick();
+    }
+
+    function formatTime(date) {
+      return date.toTimeString().split(':').slice(0,2).join('h');
+    }
+  </script>
+</body>
+</html>
