@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculateur de cycles de sommeil</title>
+    <style>
+        :root {
+            --bg-light: #f0f0f0;
+            --bg-dark: #121212;
+            --text-light: #222;
+            --text-dark: #eee;
+            --accent: #3498db;
+            --table-header-light: #ddd;
+            --table-header-dark: #333;
+            --border-light: #ccc;
+            --border-dark: #444;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        input[type="time"] {
+            font-size: 1.2em;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1.5px solid var(--accent);
+            width: 100%;
+            max-width: 200px;
+            display: block;
+            margin: 0 auto 15px auto;
+            background-color: transparent;
+            color: inherit;
+        }
+        button {
+            background-color: var(--accent);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 20px auto;
+            transition: background-color 0.25s;
+        }
+        button:hover {
+            background-color: #217dbb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 1em;
+        }
+        th, td {
+            border: 1px solid var(--border-light);
+            padding: 10px;
+            text-align: center;
+            word-break: break-word;
+        }
+        th {
+            background-color: var(--table-header-light);
+        }
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--bg-dark);
+                color: var(--text-dark);
+            }
+            th, td {
+                border: 1px solid var(--border-dark);
+            }
+            th {
+                background-color: var(--table-header-dark);
+            }
+            input[type="time"] {
+                border-color: var(--accent);
+                color: var(--text-dark);
+            }
+        }
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px 10px;
+            }
+            button, input[type="time"] {
+                font-size: 1em;
+                width: 100%;
+                max-width: none;
+            }
+            th, td {
+                padding: 8px 5px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculateur de Cycles de Sommeil</h1>
+    <p>Entre ton heure de réveil :</p>
+    <input type="time" id="wakeTime" />
+    <button onclick="calculateCycles()">Calculer</button>
+
+    <table id="resultsTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Nombre de cycles</th>
+                <th>Durée de sommeil</th>
+                <th>Heure d’endormissement</th>
+                <th>Heure pour se coucher</th>
+            </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+    </table>
+
+    <script>
+        // Sauvegarde et récupération locale de l'heure
+        window.onload = function() {
+            const savedTime = localStorage.getItem('wakeTime');
+            const input = document.getElementById('wakeTime');
+            if (savedTime) {
+                input.value = savedTime;
+                calculateCycles();
+            } else {
+                // Valeur par défaut
+                input.value = '06:20';
+            }
+        };
+
+        function calculateCycles() {
+            const wakeTimeInput = document.getElementById("wakeTime").value;
+            if (!wakeTimeInput) return;
+            localStorage.setItem('wakeTime', wakeTimeInput);
+
+            const [wakeHour, wakeMinute] = wakeTimeInput.split(":").map(Number);
+            const wakeDate = new Date();
+            wakeDate.setHours(wakeHour, wakeMinute, 0, 0);
+
+            const results = [];
+            for (let cycles = 1; cycles <= 7; cycles++) {
+                const sleepDuration = 90 * cycles;
+                const fallAsleepTime = new Date(wakeDate.getTime() - sleepDuration * 60000);
+                const bedtime = new Date(fallAsleepTime.getTime() - 15 * 60000);
+                results.push({
+                    cycles,
+                    duration: `${Math.floor(sleepDuration / 60)}h${String(sleepDuration % 60).padStart(2, '0')}`,
+                    fallAsleep: fallAsleepTime.toTimeString().substring(0,5),
+                    bedtime: bedtime.toTimeString().substring(0,5)
+                });
+            }
+
+            const tableBody = document.getElementById("resultsBody");
+            tableBody.innerHTML = "";
+            results.forEach(r => {
+                const row = `<tr><td>${r.cycles}</td><td>${r.duration}</td><td>${r.fallAsleep}</td><td>${r.bedtime}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            document.getElementById("resultsTable").style.display = "table";
+        }
+    </script>
+</body>
+</html>
