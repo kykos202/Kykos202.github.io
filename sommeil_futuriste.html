@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cycles de Sommeil - Futuriste</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background-color: #000818;
+      color: #00fff7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #00fff7;
+      text-shadow: 0 0 5px #00fff7;
+    }
+
+    input[type="time"] {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1.5em;
+      background-color: #000;
+      border: 2px solid #00fff7;
+      color: #00fff7;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #000;
+      border: 2px solid #00fff7;
+      color: #00fff7;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-shadow: 0 0 5px #00fff7;
+      box-shadow: 0 0 10px #00fff7 inset;
+    }
+
+    .results, .countdown {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .progress-ring {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 6px solid #00fff7;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      text-shadow: 0 0 4px #00fff7;
+      position: relative;
+    }
+
+    .preferred-times {
+      background: rgba(0, 255, 247, 0.1);
+      border: 1px solid #00fff7;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .preferred-times p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>JE VEUX ME RÉVEILLER À</h1>
+  <input type="time" id="wakeTime">
+  <button onclick="calculateCycles()">CALCULER LES CYCLES</button>
+  <button onclick="sleepNow()">JE VAIS DORMIR MAINTENANT</button>
+  <div class="progress-ring" id="countdown">--:--</div>
+  <div class="results" id="results"></div>
+
+  <script>
+    function calculateCycles() {
+      const wakeTime = document.getElementById('wakeTime').value;
+      if (!wakeTime) return;
+
+      const [h, m] = wakeTime.split(':');
+      const wakeDate = new Date();
+      wakeDate.setHours(h, m, 0, 0);
+
+      const cycleLength = 90 * 60 * 1000;
+      const results = document.getElementById('results');
+      results.innerHTML = "<div class='preferred-times'><p><strong>HEURES DE COUCHER IDÉALES :</strong></p>";
+
+      for (let i = 6; i >= 1; i--) {
+        const sleepTime = new Date(wakeDate - i * cycleLength);
+        results.innerHTML += `<p>${formatTime(sleepTime)}</p>`;
+      }
+      results.innerHTML += "</div>";
+
+      updateCountdown(wakeDate);
+    }
+
+    function sleepNow() {
+      const now = new Date();
+      const cycleLength = 90 * 60 * 1000;
+      const results = document.getElementById('results');
+      results.innerHTML = "<div class='preferred-times'><p><strong>HEURES DE RÉVEIL IDÉALES :</strong></p>";
+
+      for (let i = 1; i <= 6; i++) {
+        const wakeTime = new Date(now.getTime() + i * cycleLength);
+        results.innerHTML += `<p>${formatTime(wakeTime)}</p>`;
+      }
+      results.innerHTML += "</div>";
+    }
+
+    function updateCountdown(target) {
+      function tick() {
+        const now = new Date();
+        const diff = target - now;
+        const display = document.getElementById("countdown");
+
+        if (diff <= 0) {
+          display.innerHTML = "00:00";
+          return;
+        }
+
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        display.innerHTML = `${mins}m ${secs}s`;
+
+        requestAnimationFrame(tick);
+      }
+      tick();
+    }
+
+    function formatTime(date) {
+      return date.toTimeString().split(':').slice(0,2).join('h');
+    }
+  </script>
+</body>
+</html>
